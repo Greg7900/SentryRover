@@ -1,0 +1,135 @@
+
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{siunitx}
+\usepackage{hyperref}
+\usepackage{physics}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black}
+
+\title{Dimensionnement du Rover et de la Tourelle}
+\author{Projet Robot Mobile -- Synthèse des calculs}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\bigskip
+
+\section{Hypothèses et objectifs}
+\subsection{Objectifs}
+\begin{itemize}
+  \item \textbf{Rover}: atteindre une vitesse maximale de \SI{5}{m/s} avec des roues de \(\varnothing \SI{15}{cm}\) (rayon \(R=\SI{0.075}{m}\)).
+  \item \textbf{Tourelle (pan)}: effectuer \(\SI{360}{\degree}\) en \(\SI{0.2}{s}\) avec une charge de \(\SI{10}{kg}\) sur un plateau de \(\varnothing \SI{15}{cm}\).
+\end{itemize}
+
+\subsection{Composants retenus}
+\begin{itemize}
+  \item \textbf{Rover}: 4 moteurs brushless à réducteur M62B90-24P-30S/G62-5.36S1, \SI{90}{W}, \(\tau=\SI{1.38}{N.m}\) chacun, vitesse en sortie \(\SI{560}{rpm}\).
+  \item \textbf{Tourelle}: moteur NEMA23 iSV57T-090, \SI{90}{W}, \(\tau_{nom}=\SI{0.3}{N.m}\), \(\tau_{cr}=\SI{0.8}{N.m}\), \(\SI{3000}{rpm}\); réduction par courroie \(10{:}1\).
+  \item \textbf{Masse châssis nu}: \(\sim\SI{14}{kg}\) (moteurs, drivers, batterie 6S, châssis, Jetson, Arduino, câblage).
+\end{itemize}
+
+\section{Rover}
+\subsection{Cinématique de la roue}
+Périmètre roue \(C = 2\pi R\). Régime requis pour une vitesse \(v\):
+\begin{equation}
+\mathrm{RPM}=\frac{v\cdot 60}{2\pi R}.
+\end{equation}
+Avec \(v=\SI{5}{m/s}\) et \(R=\SI{0.075}{m}\):
+\begin{equation}
+\mathrm{RPM}_5=\frac{5\cdot 60}{2\pi\cdot 0.075}\approx \boxed{\SI{637}{rpm}}.
+\end{equation}
+
+\subsection{Vitesse maximale avec moteurs \SI{560}{rpm}}
+\begin{align}
+\mathrm{tr/s} &= \frac{560}{60}=9.33,\\
+v &= \mathrm{tr/s}\cdot C = 9.33\cdot (2\pi\cdot 0.075)\approx \boxed{\SI{4.40}{m/s}}.
+\end{align}
+
+\subsection{Force motrice et accélération}
+Force par moteur (couple \(\tau_m=\SI{1.38}{N.m}\)) :
+\begin{equation}
+F_m=\frac{\tau_m}{R}=\frac{1.38}{0.075}\approx \SI{18.4}{N}.
+\end{equation}
+Force totale (4 moteurs): \(\boxed{F_{tot}\approx \SI{73.6}{N}}\).\\
+Accélération avec masse \(m=\SI{15}{kg}\):
+\begin{equation}
+a=\frac{F_{tot}}{m}=\frac{73.6}{15}\approx \boxed{\SI{4.91}{m/s^2}}.
+\end{equation}
+
+\subsection{Charge totale admissible (rover compris)}
+Pour une accélération cible \(a\), la masse totale admissible vaut:
+\begin{equation}
+m_{\max}=\frac{F_{tot}}{a}.
+\end{equation}
+En retranchant la masse du rover \(m_r\simeq\SI{14}{kg}\), on obtient la charge utile \(m_{\text{payload}}\).
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+Cible & \(m_{\max}\) (total) & \(m_{\text{payload}}\) (utile)\\
+\midrule
+\(a=\SI{1}{m/s^2}\) & \(\SI{73.6}{kg}\) & \(\boxed{\SI{59.6}{kg}}\)\\
+\(a=\SI{3}{m/s^2}\) & \(\SI{24.5}{kg}\) & \(\boxed{\SI{10.5}{kg}}\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Variante roues \(\varnothing\SI{16}{cm}\) (mémo)}
+Avec \(R=\SI{0.08}{m}\) : \(C=2\pi R=\SI{0.503}{m}\).
+\begin{align}
+\mathrm{RPM}_5&=\frac{5\cdot 60}{2\pi\cdot 0.08}\approx \boxed{\SI{597}{rpm}},\\
+v_{560}&=\frac{560}{60}\cdot 2\pi\cdot 0.08\approx \boxed{\SI{4.69}{m/s}},\\
+F_m&=\frac{1.38}{0.08}=\SI{17.25}{N},\quad F_{tot}\approx \SI{69}{N}.\\
+\text{Avec } m=\SI{15}{kg}:&\quad a\approx \SI{4.6}{m/s^2}.\\
+\text{Charges utiles: }&\sim \SI{55}{kg} \text{ (}\SI{1}{m/s^2}\text{)},\ \sim \SI{9}{kg} \text{ (}\SI{3}{m/s^2}\text{)}.
+\end{align}
+
+\section{Tourelle (Pan)}
+\subsection{Spécifications}
+Objectif: \(\SI{360}{\degree}\) en \(\SI{0.2}{s}\) avec un plateau (disque plein) \(m=\SI{10}{kg}\), \(r=\SI{0.075}{m}\).
+
+\subsection{Vitesse et accélération angulaires}
+Vitesse angulaire requise:
+\begin{align}
+\omega &= \frac{2\pi}{0.2}=10\pi \approx \boxed{\SI{31.416}{rad/s}},\\
+\mathrm{RPM}_{plateau}&=\omega\cdot \frac{60}{2\pi}\approx \boxed{\SI{300}{rpm}}.
+\end{align}
+Accélération angulaire (0\(\rightarrow\)\(\omega\) en \(\SI{0.2}{s}\)):
+\begin{equation}
+\alpha=\frac{\Delta \omega}{\Delta t}=\frac{31.416}{0.2}\approx \boxed{\SI{157}{rad/s^2}}.
+\end{equation}
+
+\subsection{Couple d'accélération requis}
+Moment d'inertie du plateau (disque plein):
+\begin{equation}
+I=\frac{1}{2}mr^2=\frac{1}{2}\cdot 10 \cdot 0.075^2=\SI{0.028125}{kg\,m^2}.
+\end{equation}
+Couple requis:
+\begin{equation}
+\tau_{req}=I\alpha=0.028125\times 157 \approx \boxed{\SI{4.41}{N.m}}.
+\end{equation}
+
+\subsection{Capacité moteur (iSV57T-090) avec réduction \(10{:}1\)}
+Moteur: \(\tau_{nom}=\SI{0.3}{N.m}\), \(\tau_{cr}=\SI{0.8}{N.m}\), \(n_m=\SI{3000}{rpm}\).\\
+Après réduction \(10{:}1\): \(n_s=\SI{300}{rpm}\), \(\tau_{nom,s}=\SI{3.0}{N.m}\), \(\tau_{cr,s}=\SI{8.0}{N.m}\).\\[4pt]
+Comparaison: \(\tau_{req}=\SI{4.41}{N.m} < \tau_{cr,s}=\SI{8.0}{N.m}\) \(\Rightarrow\) conforme pour des accélérations brèves; en régime établi, le couple nécessaire est dominé par les frottements (typiquement \(\ll \SI{3}{N.m}\)).
+
+\subsection{Remarques sur la courroie}
+Pignon GT2 10 dents (pas \(\SI{2}{mm}\)): \(D \approx \frac{Np}{\pi}\approx \SI{6.37}{mm}\) (\(r\approx\SI{3.18}{mm}\)).\\
+Force tangente crête côté petit pignon:
+\begin{equation}
+F\approx \frac{\tau_{m,cr}}{r}=\frac{0.8}{0.00318}\approx \SI{250}{N}.
+\end{equation}
+Recommandations: courroie GT2 PU renforcée (largeur \(\ge\)\SI{9}{mm}), tension adéquate; pour plus de marge, profils HTD-3M/5M.
+
+\section{Synthèse}
+\begin{itemize}
+  \item Rover (\(\varnothing \SI{15}{cm}\)): \(v\approx \SI{4.40}{m/s}\) à \SI{560}{rpm}; \(F_{tot}\approx \SI{73.6}{N}\); charges utiles: \(\sim\SI{59.6}{kg}\) à \(\SI{1}{m/s^2}\), \(\sim\SI{10.5}{kg}\) à \(\SI{3}{m/s^2}\).
+  \item Variante \(\varnothing \SI{16}{cm}\): \(v\approx \SI{4.69}{m/s}\); \(F_{tot}\approx \SI{69}{N}\).
+  \item Tourelle: besoin \(\tau\approx \SI{4.41}{N.m}\); solution \(10{:}1\) avec iSV57T-090: \(\tau_{nom,s}=\SI{3.0}{N.m}\), \(\tau_{cr,s}=\SI{8.0}{N.m}\) \(\Rightarrow\) marge suffisante en crête.
+\end{itemize}
+
+\end{document}
